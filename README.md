@@ -123,9 +123,17 @@ CSV / TSV（带表头）或 JSON 对象数组，一行 = 一个可猜的目标�
 
 # 三、打包成 exe
 
-两个工具都能打包成单文件 exe（约 7 MB，双击即用）：
+**不想自己打包？直接下载现成的**（约 7 MB 单文件，双击即用）：
+
+> 下载地址：https://github.com/Ju11u5/guessr-framework/releases/latest
+> - `Guessr-Framework.exe` = 猜一猜 · 通用竞猜框架
+> - `Friberg-Helper.exe` = 弗一把 · 本地推理助手
+> - 附件用英文名是为了避免某些网络环境下中文文件名损坏，下载后可改回中文名
+
+想自己打也很简单：
 
 ```bash
+pip install pyinstaller
 python app/build.py            # 两个都打
 python app/build.py guessr     # 只打「猜一猜」
 python app/build.py friberg    # 只打「弗一把助手」
