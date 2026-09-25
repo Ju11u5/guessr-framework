@@ -9,11 +9,19 @@
 产物：dist/猜一猜.exe、dist/弗一把助手.exe（各约 7 MB 单文件）
 改完 HTML 后重跑一次即可，页面和数据会被一起打进 exe。
 """
+
 import json
 import os
 import subprocess
 import sys
 from pathlib import Path
+
+# Windows 上控制台编码可能是 cp1252 / cp936，统一按 UTF-8 输出，避免中文把脚本打崩
+for _stream in ("stdout", "stderr"):
+    try:
+        getattr(sys, _stream).reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 ROOT = Path(__file__).resolve().parent.parent
 

@@ -10,6 +10,7 @@
 
 用法：python tests/test-exe.py [exe路径 ...]
 """
+
 import os
 import re
 import shutil
@@ -18,6 +19,13 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+# Windows 上控制台编码可能是 cp1252 / cp936，统一按 UTF-8 输出，避免中文把脚本打崩
+for _stream in ("stdout", "stderr"):
+    try:
+        getattr(sys, _stream).reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 ROOT = Path(__file__).resolve().parent.parent
 CHROME = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")

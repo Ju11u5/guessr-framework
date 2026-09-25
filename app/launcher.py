@@ -16,6 +16,7 @@
   --shortcut-only  只建快捷方式，不启动
   --print-dir      只打印数据目录路径
 """
+
 import ctypes
 import json
 import os
@@ -24,6 +25,13 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+# Windows 上控制台编码可能是 cp1252 / cp936，统一按 UTF-8 输出，避免中文把脚本打崩
+for _stream in ("stdout", "stderr"):
+    try:
+        getattr(sys, _stream).reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 APP_NAME = "FribergHelper"
 PROFILE_DIR = "profile"
@@ -62,10 +70,14 @@ def is_writable(folder: Path) -> bool:
 
 
 def app_root() -> Path:
-    """便携优先：exe 所在目录可写就用它，否则退回 %LOCALAPPDATA%"""
-    exe_dir = Path(sys.executable).resolve().parent
-    if is_writable(exe_dir):
-        return exe_dir
+    """便携优先：exe 所在目录可写就用它，否则退回 %LOCALAPPDATA%。
+    直接跑源码（没打包）时用仓库根目录，别往 Python 安装目录里写文件。"""
+    if getattr(sys, "frozen", False):
+        candidate = Path(sys.executable).resolve().parent
+    else:
+        candidate = Path(__file__).resolve().parent.parent
+    if is_writable(candidate):
+        return candidate
     fallback = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()) / APP_NAME
     fallback.mkdir(parents=True, exist_ok=True)
     return fallback

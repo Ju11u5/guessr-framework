@@ -5,9 +5,18 @@
 多尺寸 ICO，内部用 4 倍超采样再缩小，边缘平滑。
 用法：python app/make_icon.py
 """
+
 import struct
+import sys
 import zlib
 from pathlib import Path
+
+# Windows 上控制台编码可能是 cp1252 / cp936，统一按 UTF-8 输出，避免中文把脚本打崩
+for _stream in ("stdout", "stderr"):
+    try:
+        getattr(sys, _stream).reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 OUT_DIR = Path(__file__).resolve().parent / "icons"
 

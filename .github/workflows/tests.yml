@@ -24,16 +24,19 @@ jobs:
 
   python:
     runs-on: windows-latest
+    env:
+      PYTHONUTF8: '1'          # 运行器默认 cp1252，脚本里有中文输出会崩
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: 启动器语法自检
+      - name: 启动器/打包脚本自检
         run: |
           python -m py_compile app/launcher.py
           python -m py_compile app/build.py
           python app/make_icon.py
+          python app/launcher.py --dry-run
       - name: 打包 exe（不发布，只验证能打出来）
         run: |
           pip install pyinstaller
