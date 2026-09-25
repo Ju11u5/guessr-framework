@@ -1,0 +1,19 @@
+# ---- 选手数据：来自上游 AGPL 项目，本仓库不分发 ----
+data/
+players.js
+tests/players.js
+
+# ---- 构建与运行产物 ----
+dist/
+build/
+profile/
+*.spec
+__pycache__/
+
+# ---- 临时文件 ----
+build.log
+proc-check.txt
+tests/ui-test.html
+
+# ---- 工作区元数据（不属于项目本身）----
+.workbuddy/
