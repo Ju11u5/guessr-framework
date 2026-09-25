@@ -1,0 +1,40 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # 仓库不含任何选手数据，所以引擎测试会自动跳过数据相关断言；
+      # 如果你自己放了 players.js，这几条会跑满。
+      - name: 框架引擎
+        run: node tests/framework.test.js
+      - name: CS 助手引擎
+        run: node tests/engine.test.js
+      - name: 推荐质量与性能
+        run: node tests/perf.test.js
+
+  python:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 启动器语法自检
+        run: |
+          python -m py_compile app/launcher.py
+          python -m py_compile app/build.py
+          python app/make_icon.py
+      - name: 打包 exe（不发布，只验证能打出来）
+        run: |
+          pip install pyinstaller
+          python app/build.py
