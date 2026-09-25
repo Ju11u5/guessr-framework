@@ -59,23 +59,8 @@ CSV / TSV（带表头）或 JSON 对象数组，一行 = 一个可猜的目标�
 
 # 二、CS 专用：弗一把推理助手 `friberg-assistant.html`
 
-玩法固定为弗一把：普通模式 8 次猜名（反馈有颜色 + 大小箭头）/ 海龟汤 18 次提问。
-判定逻辑按官方公开规则实现，数据需要自己准备（见下）。
-
-打包成 exe：
-
-```bash
-python app/build.py          # 需要 pip install pyinstaller
-```
-
-产物 `dist/弗一把助手.exe`（约 7 MB 单文件）：双击后用系统里的 Chrome / Edge 以「应用模式」
-打开一个没有地址栏的独立窗口，数据存在程序旁边的 `profile/` 目录里，与平时浏览器的数据隔离。
-
-```bash
-弗一把助手.exe --dry-run         # 只打印路径与实际启动命令，不启动
-弗一把助手.exe --shortcut        # 启动并在桌面建快捷方式
-弗一把助手.exe --print-dir       # 打印数据目录
-```
+玩法固定为弗一把：普通模式 8 次猜名（反馈有颜色 + 大小箭头）/ 海龟汤 18 次提问；
+判定逻辑按官方公开规则写死，稳定可用。
 
 ## 选手数据从哪来
 
@@ -111,6 +96,27 @@ python app/build.py          # 需要 pip install pyinstaller
 请遵守 AGPL-3.0，或更稳妥地去问一下作者。
 
 ---
+
+# 三、打包成 exe
+
+两个工具都能打包成单文件 exe（约 7 MB，双击即用）：
+
+```bash
+python app/build.py            # 两个都打
+python app/build.py guessr     # 只打「猜一猜」
+python app/build.py friberg    # 只打「弗一把助手」
+```
+
+产物在 `dist/`：`猜一猜.exe`、`弗一把助手.exe`。双击后用系统里的 Chrome / Edge 以「应用模式」
+打开一个没有地址栏的独立窗口；页面与数据会释放到 exe 同目录，数据存在旁边的 `profile/` 里，
+与平时浏览器的数据隔离。同一个启动器靠包内的 `app.json` 清单区分开哪个页面、带哪些数据。
+
+```bash
+猜一猜.exe --dry-run         # 只打印路径与实际启动命令，不启动（排查用）
+猜一猜.exe --shortcut        # 启动并在桌面建快捷方式
+猜一猜.exe --shortcut-only   # 只建快捷方式
+猜一猜.exe --print-dir       # 打印数据目录
+```
 
 # 目录结构
 
