@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>猜一猜 · 通用竞猜框架</title>
+<style>
+  :root{
+    --bg:#f3f0ea; --card:#fff; --line:#e3ded3; --line2:#efeae0;
+    --ink:#2c2c2a; --ink2:#5f5e5a; --ink3:#8b8983;
+    --green:#27500A; --green-bg:#EAF3DE; --green-ln:#639922;
+    --yellow:#633806; --yellow-bg:#FAEEDA; --yellow-ln:#BA7517;
+    --gray:#444441; --gray-bg:#F1EFE8; --gray-ln:#888780;
+    --blue:#185FA5; --blue-bg:#E6F1FB; --blue-ln:#85B7EB;
+    --red:#A32D2D; --red-bg:#FCEBEB;
+    --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--ink);
+    font:400 14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{margin:0;font-weight:500}
+  h1{font-size:17px} h2{font-size:15px} h3{font-size:13.5px}
+  .wrap{max-width:1140px;margin:0 auto;padding:18px 20px 60px}
+  header.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .logo{width:34px;height:34px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:500;flex:0 0 auto}
+  .sub{color:var(--ink2);font-size:12.5px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .badge{font-size:11.5px;padding:3px 9px;border-radius:999px;background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-ln)}
+  .badge.n{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-ln)}
+  .badge.w{background:var(--yellow-bg);color:var(--yellow);border-color:var(--yellow-ln)}
+
+  nav.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  nav.tabs button{font:inherit;font-size:13.5px;padding:7px 14px;border-radius:999px;cursor:pointer;background:#fff;color:var(--ink2);border:0.5px solid var(--line)}
+  nav.tabs button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  section.tab{display:none} section.tab.on{display:block}
+
+  .card{background:var(--card);border:0.5px solid var(--line);border-radius:var(--r);padding:14px}
+  .card + .card{margin-top:14px}
+  .card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .card-head .sp{margin-left:auto}
+  .muted{color:var(--ink2);font-size:12.5px}
+  .tiny{color:var(--ink3);font-size:11.5px}
+
+  .btn{font:inherit;font-size:13px;padding:6px 12px;border-radius:9px;cursor:pointer;background:#fff;color:var(--ink);border:0.5px solid var(--line)}
+  .btn:hover{border-color:var(--ink3)}
+  .btn.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.sm{font-size:12px;padding:4px 9px;border-radius:7px}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--blue);padding:4px 6px}
+  .btn.danger{color:var(--red)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+
+  label.f{display:block;font-size:12px;color:var(--ink2);margin-bottom:4px}
+  input[type=text],input[type=number],select,textarea{font:inherit;font-size:13px;width:100%;padding:7px 9px;border-radius:9px;border:0.5px solid var(--line);background:#fff;color:var(--ink)}
+  textarea{min-height:90px;resize:vertical;line-height:1.5;font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue-bg);border-color:var(--blue-ln)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+  .row > *{flex:1 1 130px;min-width:0}
+  .row.tight > *{flex:0 1 auto}
+  .fm{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-top:8px}
+
+  .seg{display:inline-flex;border:0.5px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{font:inherit;font-size:12.5px;padding:6px 12px;background:#fff;border:0;cursor:pointer;color:var(--ink2)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:0.5px solid var(--line2);vertical-align:middle}
+  th{font-size:11.5px;font-weight:500;color:var(--ink3);white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  .wide th,.wide td{white-space:nowrap}
+  .scroll{max-height:340px;overflow:auto;border-radius:10px}
+
+  .chip{display:inline-block;font-size:11.5px;padding:2px 7px;border-radius:6px;white-space:nowrap}
+  .chip.green{background:var(--green-bg);color:var(--green)}
+  .chip.yellow{background:var(--yellow-bg);color:var(--yellow)}
+  .chip.gray{background:var(--gray-bg);color:var(--gray)}
+  .chip.plain{background:var(--blue-bg);color:var(--blue)}
+
+  .cyc{font:inherit;font-size:12px;padding:6px 8px;border-radius:8px;cursor:pointer;border:0.5px solid var(--gray-ln);background:var(--gray-bg);color:var(--gray);text-align:center;white-space:nowrap;width:100%}
+  .cyc.green{background:var(--green-bg);color:var(--green);border-color:var(--green-ln)}
+  .cyc.yellow{background:var(--yellow-bg);color:var(--yellow);border-color:var(--yellow-ln)}
+  .fbcell{display:flex;gap:4px;align-items:center}
+  .dirbtn{font:inherit;font-size:12px;width:30px;padding:6px 0;border-radius:8px;cursor:pointer;background:#fff;border:0.5px solid var(--line);color:var(--ink2)}
+  .dirbtn.on{background:var(--blue-bg);border-color:var(--blue-ln);color:var(--blue)}
+
+  .advice{border:0.5px solid var(--line);border-radius:10px;padding:9px 10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .advice + .advice{margin-top:7px}
+  .advice .who{font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .advice .num{margin-left:auto;color:var(--ink2);font-size:12px;white-space:nowrap}
+  .empty{border:0.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--ink3);font-size:12.5px}
+  .lockline{font-size:12.5px;padding:5px 0;border-bottom:0.5px dashed var(--line2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .lockline:last-child{border-bottom:0}
+  .lockline b{font-weight:500;min-width:76px;color:var(--ink2)}
+  .warnbox{background:var(--yellow-bg);color:var(--yellow);border:0.5px solid var(--yellow-ln);border-radius:10px;padding:9px 11px;font-size:12.5px}
+  .errbox{background:var(--red-bg);color:var(--red);border:0.5px solid #F09595;border-radius:10px;padding:9px 11px;font-size:12.5px}
+  .okbox{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-ln);border-radius:10px;padding:9px 11px;font-size:12.5px}
+
+  .topbar{position:sticky;top:0;z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--bg);padding:9px 0;margin:-4px 0 14px;border-bottom:0.5px solid var(--line)}
+  .topbar .grow{flex:1 1 auto;min-width:0}
+  .pips{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+  .pip{width:14px;height:6px;border-radius:3px;background:var(--green-ln);opacity:.85}
+  .pip.used{background:var(--line)}
+  .bar{display:inline-block;width:110px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+  .bar-fill{display:block;height:100%;background:var(--green-ln)}
+  .chance{display:flex;gap:7px;align-items:center;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+  .chance b{color:var(--ink);font-weight:500}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:14px;align-items:start}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .col-right{position:sticky;top:62px;align-self:start}
+  @media (max-width:900px){.col-right{position:static}}
+
+  details.fold{border:0.5px solid var(--line2);border-radius:10px;padding:8px 10px;margin-top:10px;background:#fbfaf7}
+  details.fold > summary{cursor:pointer;font-size:12.5px;color:var(--ink2);list-style:none}
+  details.fold > summary::-webkit-details-marker{display:none}
+  details.fold > summary::before{content:"▸";display:inline-block;width:12px;color:var(--ink3)}
+  details.fold[open] > summary::before{content:"▾"}
+  details.fold .fold-preview{color:var(--ink3);font-size:11.5px;margin-left:6px}
+  details.fold[open] .fold-preview{display:none}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:flex;gap:10px;align-items:center;background:var(--ink);color:#fff;padding:9px 14px;border-radius:12px;font-size:13px}
+  .toast button{font:inherit;font-size:12.5px;background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:8px;padding:4px 10px;cursor:pointer}
+  .kbd{font-size:10.5px;color:var(--ink3);border:0.5px solid var(--line);border-radius:4px;padding:0 4px;margin-left:2px}
+  .fieldrow td{padding:5px 6px}
+  .fieldrow input,.fieldrow select{font-size:12.5px;padding:5px 7px}
+  .drop{border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--ink2);font-size:13px;background:#fbfaf7}
+  .drop.on{border-color:var(--blue-ln);background:var(--blue-bg);color:var(--blue)}
+  code{background:var(--gray-bg);padding:1px 5px;border-radius:5px;font-size:12px}
+  .foot{margin-top:16px;color:var(--ink3);font-size:11.5px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">猜</div>
+    <div>
+      <h1>猜一猜 · 通用竞猜框架</h1>
+      <div class="sub">自己上传数据 → 自动生成一个「猜目标」游戏 + 推理助手。内容不限，CS 选手 / 动漫角色 / 球星 / 城市 / 元素都行</div>
+    </div>
+    <div class="badges">
+      <span class="badge">数据只在你本机</span>
+      <span class="badge n">离线可用</span>
+      <span class="badge w">不联网 · 不上传</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="play" aria-selected="true">对局</button>
+    <button role="tab" data-tab="data" aria-selected="false">数据集</button>
+    <button role="tab" data-tab="help" aria-selected="false">怎么用</button>
+  </nav>
+
+  <!-- ================= 对局 ================= -->
+  <section class="tab on" id="tab-play">
+    <div class="topbar">
+      <select id="sel-dataset" style="width:auto;max-width:220px"></select>
+      <div class="seg" id="seg-mode">
+        <button data-mode="guess" aria-pressed="true">猜名</button>
+        <button data-mode="ask" aria-pressed="false">属性提问</button>
+      </div>
+      <div class="seg" id="seg-src">
+        <button data-src="local" aria-pressed="true">本地出题</button>
+        <button data-src="manual" aria-pressed="false">外部裁判</button>
+      </div>
+      <div class="chance" id="progress"></div>
+      <div class="grow"></div>
+      <button class="btn sm" id="btn-undo" disabled>撤销<span class="kbd">Ctrl+Z</span></button>
+      <button class="btn p" id="btn-newgame">新一局</button>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-head">
+            <h2 id="h-guess">猜一个目标</h2>
+            <div class="sp"></div>
+            <span class="tiny" id="src-hint"></span>
+          </div>
+          <div class="row">
+            <div style="flex:2 1 200px">
+              <label class="f" id="lbl-primary">名称</label>
+              <input type="text" id="g-name" list="primary-list" placeholder="输入名称，回车提交" autocomplete="off" />
+              <datalist id="primary-list"></datalist>
+            </div>
+            <div style="flex:0 1 130px">
+              <label class="f">&nbsp;</label>
+              <button class="btn p" id="btn-guess" style="width:100%">提交猜测</button>
+            </div>
+          </div>
+          <div id="fb-wrap">
+            <div class="muted" style="margin:11px 0 5px" id="fb-label"></div>
+            <div class="fm" id="guess-fb"></div>
+          </div>
+          <div class="muted" style="margin-top:9px" id="guess-hint"></div>
+          <details class="fold" id="fold-values">
+            <summary>这次猜测的完整属性<span class="fold-preview" id="fold-preview"></span></summary>
+            <div class="fm" id="guess-values"></div>
+          </details>
+        </div>
+
+        <div class="card" id="ask-card">
+          <div class="card-head">
+            <h2>提一个属性问题</h2>
+            <div class="sp"></div>
+            <span class="tiny">回答：是 / 是也不是 / 不是</span>
+          </div>
+          <div class="row">
+            <div style="flex:0 1 150px"><label class="f">问哪个属性</label><select id="a-field"></select></div>
+            <div style="flex:1 1 150px"><label class="f">问的值</label><input type="text" id="a-value" placeholder="输入一个值，回车提交" /></div>
+            <div style="flex:0 1 120px"><label class="f">回答</label>
+              <select id="a-result"><option value="yes">是</option><option value="close">是也不是</option><option value="no">不是</option></select>
+            </div>
+            <div style="flex:0 1 110px"><label class="f">&nbsp;</label><button class="btn p" id="btn-ask" style="width:100%">提问</button></div>
+          </div>
+          <div class="muted" style="margin-top:8px" id="ask-hint"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>已录入的线索</h2>
+            <div class="sp"></div>
+            <span class="tiny" id="rec-count"></span>
+            <button class="btn sm danger" id="btn-clear-rec">清空</button>
+          </div>
+          <div class="scroll"><table><thead><tr><th>类型</th><th>内容</th><th>反馈</th><th></th></tr></thead><tbody id="rec-body"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="col-right">
+        <div class="card">
+          <div class="card-head"><h2>下一步建议</h2><div class="sp"></div><span class="tiny">按期望剩余人数升序</span></div>
+          <div id="advice"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>已推断出的信息</h2></div>
+          <div id="locks"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-head"><h2>仍然可能的候选</h2><div class="sp"></div><span class="tiny" id="cand-count"></span></div>
+      <div id="cands"></div>
+    </div>
+  </section>
+
+  <!-- ================= 数据集 ================= -->
+  <section class="tab" id="tab-data">
+    <div class="card">
+      <div class="card-head">
+        <h2>导入数据</h2>
+        <div class="sp"></div>
+        <span class="tiny">支持粘贴 CSV / TSV / JSON，或拖入文件</span>
+      </div>
+      <div class="drop" id="drop">把 <code>.csv</code> / <code>.tsv</code> / <code>.json</code> 文件拖到这里，或直接粘贴到下面的框里</div>
+      <div style="margin-top:10px">
+        <label class="f">数据内容</label>
+        <textarea id="imp-text" style="min-height:130px" placeholder="名称,队伍,国家,年龄&#10;选手甲,MOUZ,瑞典,25&#10;选手乙,NAVI,乌克兰,28&#10;&#10;（JSON 也行：[{&quot;名称&quot;:&quot;选手甲&quot;,&quot;队伍&quot;:&quot;MOUZ&quot;}]）"></textarea>
+        <div class="row tight" style="margin-top:8px">
+          <div style="flex:0 1 200px"><label class="f">数据集名称</label><input type="text" id="imp-name" placeholder="例如 我的选手库" /></div>
+          <div style="flex:0 1 200px"><label class="f">预设字段规则</label>
+            <select id="imp-preset">
+              <option value="">自动推断</option>
+              <option value="cs">CS 选手（队伍/历史队伍/国家/赛区/年龄/Major）</option>
+            </select>
+          </div>
+          <div style="flex:0 1 auto"><label class="f">&nbsp;</label><button class="btn p" id="btn-parse">解析并预览</button></div>
+          <div style="flex:0 1 auto"><label class="f">&nbsp;</label><button class="btn" id="btn-example">载入示例数据（元素周期表）</button></div>
+        </div>
+        <div class="muted" id="imp-hint" style="margin-top:6px"></div>
+      </div>
+    </div>
+
+    <div class="card" id="preview-card" style="display:none">
+      <div class="card-head"><h2>字段规则（可逐列改）</h2><div class="sp"></div><span class="tiny">改完点「保存这个数据集」</span></div>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>列</th><th>显示名</th><th>比较规则</th><th>容差</th><th>关联</th><th>主键</th><th>隐藏</th><th>样例值</th></tr></thead>
+        <tbody id="field-body"></tbody>
+      </table></div>
+      <details class="fold">
+        <summary>高级：分组映射表（用于「同组即算接近」，如 国家→赛区）</summary>
+        <p class="tiny" style="margin:8px 0 6px">JSON 格式：<code>{"groups":{"赛区":{"法国":"欧洲","瑞典":"欧洲"}}}</code>，然后在某列把「关联」填成 <code>赛区</code>。</p>
+        <textarea id="groups-json" style="min-height:90px" placeholder='{"groups":{"赛区":{"法国":"欧洲"}}}'></textarea>
+      </details>
+      <div class="row tight" style="margin-top:10px">
+        <div style="flex:0 1 auto"><button class="btn p" id="btn-save-ds">保存这个数据集</button></div>
+        <div style="flex:0 1 auto"><button class="btn" id="btn-cancel-preview">放弃</button></div>
+        <div style="flex:0 1 auto" class="muted" id="preview-meta"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>我保存的数据集</h2><div class="sp"></div>
+        <span class="tiny" id="ds-meta"></span>
+        <button class="btn sm" id="btn-export-ds">导出当前数据集</button>
+        <button class="btn sm" id="btn-export-rec">导出对局存档</button>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>名称</th><th>行数</th><th>字段</th><th>创建时间</th><th></th></tr></thead>
+        <tbody id="ds-body"></tbody>
+      </table></div>
+      <div class="row tight" style="margin-top:10px">
+        <div style="flex:0 1 auto"><button class="btn" id="btn-import-file">导入数据集 / 存档文件</button></div>
+        <div style="flex:0 1 auto" class="muted tiny">数据集和存档都是普通 JSON，可以直接发给别人</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>当前数据集的字段</h2><div class="sp"></div>
+        <button class="btn sm" id="btn-add-field">加一个字段</button>
+      </div>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>列</th><th>显示名</th><th>比较规则</th><th>容差</th><th>关联</th><th>主键</th><th>隐藏</th><th>样例值</th></tr></thead>
+        <tbody id="field-body2"></tbody>
+      </table></div>
+      <div class="muted" style="margin-top:6px">在这里改完会立刻生效（同一数据集共用一份字段规则）。</div>
+    </div>
+  </section>
+
+  <!-- ================= 说明 ================= -->
+  <section class="tab" id="tab-help">
+    <div class="card">
+      <div class="card-head"><h2>三分钟上手</h2></div>
+      <ol style="margin:0;padding-left:20px;font-size:13px;line-height:1.9">
+        <li><b>上传数据</b>：到「数据集」页，把表格粘进去（第一行是表头）或拖入 csv/json，点「解析并预览」。</li>
+        <li><b>调节规则</b>：框架会自动推断每列的比较规则，你可以逐列改成想要的效果（很关键，见下表）。</li>
+        <li><b>开始玩</b>：回「对局」页。<b>本地出题</b>=页面随机藏一个目标、自动给反馈，自己就能玩；<b>外部裁判</b>=你在别的地方（网站/群友出题）玩，把反馈手工录进来，它当你的参谋。</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>比较规则怎么选</h2></div>
+      <div class="scroll"><table class="wide">
+        <thead><tr><th>规则</th><th>绿的条件</th><th>黄的条件</th><th>适合</th></tr></thead>
+        <tbody>
+          <tr><td><b>完全相同</b></td><td>值一样</td><td>不会黄</td><td>名称、位置、状态、类别这类「对就是对」的列</td></tr>
+          <tr><td><b>文本宽松</b></td><td>忽略大小写/空格/后缀后一样</td><td>不会黄</td><td>大小写不统一的昵称、符号</td></tr>
+          <tr><td><b>数值接近</b></td><td>数值一样</td><td>差值 ≤ 容差（并显示 ↑↓ 方向）</td><td>年龄、身高、体重、数量、年份</td></tr>
+          <tr><td><b>同组即算接近</b></td><td>值一样</td><td>同属一组（需配「关联」指向分组映射表）</td><td>国家→赛区、城市→省份、作品→作者</td></tr>
+          <tr><td><b>命中列表即算接近</b></td><td>值一样</td><td>该值出现在目标的另一个列表列里（需配「关联」指向那个列）</td><td>当前队伍 vs 历史队伍、当前属性 vs 过往作品</td></tr>
+          <tr><td><b>集合有交集</b></td><td>集合完全相同</td><td>有任意一个共同元素</td><td>标签、技能、配音演员</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>两个模式</h2></div>
+      <p class="muted" style="margin:0 0 8px"><b>猜名</b>：一次猜一个目标，看各列反馈缩小范围。次数可自己定（默认 8 次）。</p>
+      <p class="muted" style="margin:0 0 8px"><b>属性提问</b>：像海龟汤一样问「他的某属性是某值吗」，回答只有 是 / 是也不是 / 不是，不给方向提示。提问数可自己定（默认 18 次）。</p>
+      <p class="muted" style="margin:0">两种模式下右边都会实时给出建议：猜名给「最该猜谁」，提问给「最该问哪个属性的哪个值」，算法都是<b>最小化期望剩余候选数</b>。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>数据格式</h2></div>
+      <p class="muted" style="margin:0 0 8px">CSV / TSV（带表头）或 JSON 对象数组，一行 = 一个可猜的目标。数值列会自动识别成数字；用 <code>/</code> 或 <code>,</code> 分隔的多值会被识别成列表（配合「命中列表」规则用）。</p>
+      <p class="muted" style="margin:0">例：
+      <br><code>名称,队伍,历史队伍,国家/地区,年龄,位置,Major冠军,Major参赛,状态</code>
+      <br><code>选手甲,MOUZ,FaZe/NAVI,瑞典,25,狙击手,1,6,现役</code></p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>关于数据与版权</h2></div>
+      <p class="muted" style="margin:0">所有数据只存在你自己的浏览器里，页面不联网、不上传任何东西。你导入什么、去哪里玩，都由你决定；如果要在公开场合使用别人的数据，请自己确认版权与许可。</p>
+    </div>
+  </section>
+
+  <div class="foot">数据全部保存在本机浏览器；页面不发起任何网络请求。</div>
+</div>
+
+<script>
+/* ================= ENGINE_START ================= */
+/* ---------- 通用比较规则 ----------
+   返回编码：0=无法判定 1=绿 2=黄 3=黄↑ 4=黄↓ 5=灰 6=灰↑ 7=灰↓ */
+var REL_COLORS = [null, 'green', 'yellow', 'yellow', 'yellow', 'gray', 'gray', 'gray'];
+var REL_DIRS = [null, '', '', 'up', 'down', '', 'up', 'down'];
+
+var RULES = [
+  { key: 'exact',      label: '完全相同',        needs: [] },
+  { key: 'text',       label: '文本宽松',        needs: [] },
+  { key: 'number',     label: '数值接近',        needs: ['tol'] },
+  { key: 'group',      label: '同组即算接近',    needs: ['link'] },
+  { key: 'listHit',    label: '命中列表即算接近', needs: ['link'] },
+  { key: 'setOverlap', label: '集合有交集',      needs: ['tol'] }
+];
+var RULE_BY_KEY = {};
+RULES.forEach(function (r) { RULE_BY_KEY[r.key] = r; });
+
+function colorOf(code) { return REL_COLORS[code] || ''; }
+function dirOf(code) { return REL_DIRS[code] || ''; }
+function decodeRel(code) { return code ? { color: colorOf(code), dir: dirOf(code) } : null; }
+
+function normText(v) {
+  return String(v == null ? '' : v).trim().toLowerCase().replace(/\s+/g, '');
+}
+
+function toNum(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  var n = Number(String(v).trim());
+  return isFinite(n) ? n : null;
+}
+
+/* 一个值可能写成 "a/b/c" 或数组 → 归一成字符串数组 */
+function toList(v) {
+  if (Array.isArray(v)) return v.map(normText).filter(Boolean);
+  if (v === '' || v === null || v === undefined) return [];
+  return String(v).split(/[\/,，、|;；]/).map(normText).filter(Boolean);
+}
+
+function looksNumeric(v) {
+  return v !== '' && v !== null && v !== undefined && String(v).trim() !== '' && isFinite(Number(String(v).trim()));
+}
+
+function looksList(v) {
+  if (Array.isArray(v)) return true;
+  return /[\/,，、|;；]/.test(String(v == null ? '' : v));
+}
+
+/* 数据集预编译：
+   - 每行算出归一化值 n[字段]
+   - listHit：n[字段__link] 存关联列（列表）的归一值
+   - group：两种模式都支持
+       · 关联列已存在（如数据里有「赛区」列）→ 行内取组，并建立 值→组 索引
+       · 否则关联当成分组映射表名（dataset.groups[映射名] = {值: 组}） */
+function buildDataset(ds) {
+  var fields = (ds.fields || []).filter(function (f) { return f && f.key; });
+  var primary = fields.filter(function (f) { return f.primary; })[0] || fields[0];
+  if (primary) primary.primary = true;
+  var groupsTable = (ds.groups || {});
+  var listFields = {};
+  fields.forEach(function (f) { listFields[f.key] = 1; });
+  var gidx = {};
+
+  var rows = (ds.rows || []).map(function (row) {
+    var n = {};
+    fields.forEach(function (f) {
+      var v = row[f.key];
+      if (f.rule === 'number') n[f.key] = toNum(v);
+      else if (f.rule === 'setOverlap') n[f.key] = toList(v);
+      else n[f.key] = normText(v);
+
+      if (f.rule === 'listHit' && f.link && listFields[f.link]) {
+        n[f.key + '__link'] = toList(row[f.link]);
+      }
+      if (f.rule === 'group' && f.link) {
+        if (listFields[f.link]) {
+          /* 行内分组：直接读那一列，并记录 值→组 */
+          var g = normText(row[f.link]);
+          n[f.key + '__group'] = g;
+          if (!gidx[f.key]) gidx[f.key] = {};
+          gidx[f.key][n[f.key]] = g;
+        } else {
+          var tbl = groupsTable[f.link] || {};
+          var mapped = tbl[String(row[f.key])];
+          n[f.key + '__group'] = mapped ? normText(mapped) : '';
+        }
+      }
+    });
+    return { row: row, n: n };
+  });
+
+  return { id: ds.id, name: ds.name, note: ds.note, fields: fields, primary: primary,
+           rows: rows, groups: groupsTable, gidx: gidx, history: ds.history,
+           ctx: { groups: groupsTable, gidx: gidx } };
+}
+
+/* 猜侧的值（从一行数据或手工输入构造） */
+function guessNorm(field, raw) {
+  if (field.rule === 'number') return toNum(raw);
+  if (field.rule === 'setOverlap') return toList(raw);
+  return normText(raw);
+}
+
+function relCode(field, gNorm, candN, ctx) {
+  if (gNorm === null || gNorm === undefined || gNorm === '') return 0;
+
+  switch (field.rule) {
+    case 'number': {
+      var c = candN[field.key];
+      if (c === null || c === undefined) return 0;
+      if (gNorm === c) return 1;
+      var d = c - gNorm, tol = field.tol === undefined || field.tol === null ? 0 : Number(field.tol);
+      if (Math.abs(d) <= tol) return d > 0 ? 3 : 4;
+      return d > 0 ? 6 : 7;
+    }
+    case 'listHit': {
+      var cv = candN[field.key];
+      if (!cv) return 0;
+      if (cv === gNorm) return 1;
+      var list = candN[field.key + '__link'];
+      if (!list || !list.length) return 0;
+      for (var i = 0; i < list.length; i++) if (list[i] === gNorm) return 2;
+      return 5;
+    }
+    case 'group': {
+      var gv = candN[field.key];
+      if (!gv) return 0;
+      if (gv === gNorm) return 1;
+      var g2 = candN[field.key + '__group'];
+      if (!g2) return 0;
+      ctx = ctx || {};
+      var groups = ctx.groups || ctx;          /* 兼容直接传分组表的老写法 */
+      var idx = (ctx.gidx || {})[field.key] || {};
+      var g1 = idx[gNorm];
+      if (!g1) {
+        var tbl = groups[field.link] || groups[field.key] || {};
+        g1 = tbl[String(gNorm)] ? normText(tbl[String(gNorm)]) : '';
+      }
+      if (!g1) return 0;
+      return g1 === g2 ? 2 : 5;
+    }
+    case 'setOverlap': {
+      var set = candN[field.key];
+      if (!set || !set.length || !gNorm.length) return 0;
+      var same = set.length === gNorm.length && set.every(function (x) { return gNorm.indexOf(x) >= 0; });
+      if (same) return 1;
+      for (var j = 0; j < gNorm.length; j++) if (set.indexOf(gNorm[j]) >= 0) return 2;
+      return 5;
+    }
+    case 'text':
+    case 'exact':
+    default: {
+      var c2 = candN[field.key];
+      if (c2 === undefined || c2 === null || c2 === '') return 0;
+      return c2 === gNorm ? 1 : 5;
+    }
+  }
+}
+
+/* ---------- 与「一次猜测」相关的判定 ----------
+   record: { kind:'guess', raw:{字段原始值}, guessNorm:{字段归一值}, fb:{字段→{color,dir}} }
+   relation 用猜测侧原始值现场归一，便于手工录入 */
+function recordGuessNorms(ds, rec) {
+  var out = {};
+  ds.fields.forEach(function (f) {
+    var raw = (rec.raw || {})[f.key];
+    if (raw === undefined && rec.values) raw = rec.values[f.key];
+    out[f.key] = guessNorm(f, raw);
+  });
+  return out;
+}
+
+function matchGuess(ds, rec, candIdx) {
+  var n = rec.guessNorm || recordGuessNorms(ds, rec);
+  var candN = ds.rows[candIdx].n;
+  for (var i = 0; i < ds.fields.length; i++) {
+    var f = ds.fields[i];
+    var fb = (rec.fb || {})[f.key];
+    if (!fb || !fb.color) continue;
+    var code = relCode(f, n[f.key], candN, ds.ctx);
+    if (!code) continue;
+    if (colorOf(code) !== fb.color) {
+      return { ok: false, why: f.label + '：记录是' + cnColor(fb.color) + '，但候选「' + ds.rows[candIdx].row[ds.primary.key] + '」应为' + cnColor(colorOf(code)) };
+    }
+    if (f.rule === 'number' && fb.color !== 'green' && fb.dir && dirOf(code) && fb.dir !== dirOf(code)) {
+      return { ok: false, why: f.label + '：方向不符' };
+    }
+  }
+  return { ok: true };
+}
+
+function matchAsk(ds, rec, candIdx) {
+  var f = null;
+  for (var i = 0; i < ds.fields.length; i++) if (ds.fields[i].key === rec.field) { f = ds.fields[i]; break; }
+  if (!f) return { ok: true };
+  var gNorm = guessNorm(f, rec.value);
+  var code = relCode(f, gNorm, ds.rows[candIdx].n, ds.ctx);
+  if (!code) return { ok: true };
+  var real = colorOf(code) === 'green' ? 'yes' : (colorOf(code) === 'yellow' ? 'close' : 'no');
+  if (real !== rec.result) {
+    return { ok: false, why: f.label + ' = ' + rec.value + '：记录为「' + ASK_LABELS[rec.result] + '」，但候选应为「' + ASK_LABELS[real] + '」' };
+  }
+  return { ok: true };
+}
+
+var ASK_LABELS = { yes: '是', close: '是也不是', no: '不是' };
+var COLOR_LABELS = { green: '绿', yellow: '黄', gray: '灰' };
+function cnColor(c) { return COLOR_LABELS[c] || c; }
+
+function filterCandidates(ds, records) {
+  var kept = [], dropped = [];
+  for (var i = 0; i < ds.rows.length; i++) {
+    var ok = true, why = '';
+    for (var j = 0; j < records.length; j++) {
+      var rec = records[j];
+      var res = rec.kind === 'ask' ? matchAsk(ds, rec, i) : matchGuess(ds, rec, i);
+      if (!res.ok) { ok = false; why = res.why; break; }
+    }
+    if (ok) kept.push(i); else dropped.push({ idx: i, why: why });
+  }
+  return { kept: kept, dropped: dropped };
+}
+
+/* 对某个候选产生的反馈（本地出题时用） */
+function feedbackAgainst(ds, guessNorms, candIdx) {
+  var out = {};
+  ds.fields.forEach(function (f) {
+    out[f.key] = decodeRel(relCode(f, guessNorms[f.key], ds.rows[candIdx].n, ds.ctx)) || { color: '', dir: '' };
+  });
+  return out;
+}
+
+/* ---------- 推荐算法：最小化期望剩余 ---------- */
+function expectedRemaining(sizes, total) {
+  var e = 0;
+  sizes.forEach(function (n) { e += n * n / total; });
+  return e;
+}
+
+function partitionByGuess(ds, guessIdx, set) {
+  var gNorms = {};
+  ds.fields.forEach(function (f) { gNorms[f.key] = ds.rows[guessIdx].n[f.key]; });
+  var groups = new Map();
+  for (var i = 0; i < set.length; i++) {
+    var candN = ds.rows[set[i]].n, key = 0;
+    for (var j = 0; j < ds.fields.length; j++) {
+      key = key * 8 + relCode(ds.fields[j], gNorms[ds.fields[j].key], candN, ds.ctx);
+    }
+    groups.set(key, (groups.get(key) || 0) + 1);
+  }
+  var sizes = [];
+  groups.forEach(function (v) { sizes.push(v); });
+  return { sizes: sizes, expected: expectedRemaining(sizes, set.length), worst: Math.max.apply(null, sizes) };
+}
+
+function rankGuesses(ds, set) {
+  if (set.length <= 1) return set.map(function (i) { return { idx: i, expected: set.length, worst: set.length, done: true }; });
+  var seen = {}, uniq = [];
+  for (var i = 0; i < set.length; i++) {
+    var sig = ds.fields.map(function (f) { return String(ds.rows[set[i]].n[f.key]); }).join('\u0001');
+    if (seen[sig]) continue;
+    seen[sig] = 1; uniq.push(set[i]);
+  }
+  var out = uniq.map(function (idx) {
+    var p = partitionByGuess(ds, idx, set);
+    return { idx: idx, expected: p.expected, worst: p.worst, done: false };
+  });
+  out.sort(function (a, b) {
+    return (a.expected - b.expected) || (a.worst - b.worst) ||
+      String(ds.rows[a.idx].row[ds.primary.key]).localeCompare(String(ds.rows[b.idx].row[ds.primary.key]));
+  });
+  return out;
+}
+
+function askValuesFor(ds, field, set) {
+  var seen = {}, out = [];
+  for (var i = 0; i < set.length; i++) {
+    var raw = ds.rows[set[i]].row[field.key];
+    if (raw === '' || raw === null || raw === undefined) continue;
+    var vals = field.rule === 'setOverlap' || (Array.isArray(raw) ? [raw] : null) ? toList(raw) : [raw];
+    if (Array.isArray(raw) || field.rule === 'setOverlap') vals = toList(raw);
+    for (var v = 0; v < vals.length; v++) {
+      var show = Array.isArray(raw) || field.rule === 'setOverlap' ? vals[v] : String(raw);
+      var k = normText(show);
+      if (!k || seen[k]) continue;
+      seen[k] = 1; out.push(show);
+    }
+  }
+  return out;
+}
+
+function partitionByAsk(ds, field, value, set) {
+  var gNorm = guessNorm(field, value);
+  var counts = { yes: 0, close: 0, no: 0 };
+  for (var i = 0; i < set.length; i++) {
+    var code = relCode(field, gNorm, ds.rows[set[i]].n, ds.ctx);
+    if (!code) continue;
+    var k = colorOf(code) === 'green' ? 'yes' : (colorOf(code) === 'yellow' ? 'close' : 'no');
+    counts[k]++;
+  }
+  var sizes = ['yes', 'close', 'no'].map(function (k) { return counts[k]; }).filter(function (n) { return n > 0; });
+  var total = sizes.reduce(function (a, b) { return a + b; }, 0);
+  return { counts: counts, total: total, expected: total ? expectedRemaining(sizes, total) : Infinity };
+}
+
+function rankAsks(ds, set) {
+  if (set.length <= 1) return [];
+  var out = [];
+  ds.fields.forEach(function (f) {
+    if (f.key === ds.primary.key) return;
+    askValuesFor(ds, f, set).forEach(function (v) {
+      var p = partitionByAsk(ds, f, v, set);
+      if (!p.total || p.expected === Infinity) return;
+      if (p.counts.yes === p.total) return;
+      out.push({ field: f, value: v, expected: p.expected, counts: p.counts, total: p.total });
+    });
+  });
+  out.sort(function (a, b) {
+    return (a.expected - b.expected) || (b.total - a.total) || String(a.value).localeCompare(String(b.value));
+  });
+  return out;
+}
+
+/* ---------- 已推断出的信息 ---------- */
+function lockText(field, recs) {
+  var exact = null, min = null, max = null, hits = [];
+  (recs || []).forEach(function (rec) {
+    if (rec.kind === 'ask') {
+      if (rec.field !== field.key) return;
+      if (rec.result === 'yes') { exact = String(rec.value); hits.push('问「' + field.label + ' = ' + rec.value + '」→ 是'); }
+      else if (rec.result === 'close') hits.push('问「' + field.label + ' = ' + rec.value + '」→ 是也不是');
+      else hits.push('问「' + field.label + ' = ' + rec.value + '」→ 不是');
+      return;
+    }
+    var fb = (rec.fb || {})[field.key];
+    if (!fb || !fb.color) return;
+    var raw = (rec.raw || {})[field.key];
+    if (raw === '' || raw === null || raw === undefined) return;
+    if (fb.color === 'green') { exact = String(raw); return; }
+    if (field.rule !== 'number') return;
+    var g = toNum(raw);
+    if (g === null) return;
+    if (fb.color === 'yellow') {
+      var tol = Number(field.tol || 0);
+      min = min === null ? g - tol : Math.max(min, g - tol);
+      max = max === null ? g + tol : Math.min(max, g + tol);
+    }
+    if (fb.dir === 'up') min = min === null ? g + 1 : Math.max(min, g + 1);
+    else if (fb.dir === 'down') max = max === null ? g - 1 : Math.min(max, g - 1);
+  });
+  var text;
+  if (exact !== null) text = '= ' + exact;
+  else if (min !== null && max !== null) text = min + ' ~ ' + max;
+  else if (min !== null) text = '≥ ' + min;
+  else if (max !== null) text = '≤ ' + max;
+  else text = '未约束';
+  return { text: text, hits: hits };
+}
+
+/* ---------- 导入解析 ---------- */
+function detectDelimiter(text) {
+  var first = String(text).split(/\r?\n/).filter(function (l) { return l.trim(); })[0] || '';
+  var cands = [{ d: '\t', n: (first.match(/\t/g) || []).length }, { d: ',', n: (first.match(/,/g) || []).length },
+               { d: '|', n: (first.match(/\|/g) || []).length }, { d: ';', n: (first.match(/;/g) || []).length }];
+  cands.sort(function (a, b) { return b.n - a.n; });
+  return cands[0].n ? cands[0].d : ',';
+}
+
+function splitCsvLine(line, d) {
+  var out = [], cur = '', q = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (q) {
+      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') q = false;
+      else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === d) { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out.map(function (s) { return s.trim(); });
+}
+
+function parseAny(text) {
+  var t = String(text || '').trim();
+  if (!t) return { error: '内容为空' };
+  if (t[0] === '[' || t[0] === '{') {
+    try {
+      var data = JSON.parse(t);
+      if (data && !Array.isArray(data) && Array.isArray(data.rows)) return { json: data };
+      var arr = Array.isArray(data) ? data : (data.rows || []);
+      if (!Array.isArray(arr) || !arr.length) return { error: 'JSON 里没有数据行' };
+      var keys = [];
+      arr.forEach(function (o) { Object.keys(o || {}).forEach(function (k) { if (keys.indexOf(k) < 0) keys.push(k); }); });
+      return { columns: keys, rows: arr, json: null };
+    } catch (e) { return { error: 'JSON 解析失败：' + e.message }; }
+  }
+  var d = detectDelimiter(t);
+  var lines = t.split(/\r?\n/).filter(function (l) { return l.trim(); });
+  if (lines.length < 2) return { error: '至少需要一行表头 + 一行数据' };
+  var cols = splitCsvLine(lines[0], d);
+  var rows = [];
+  for (var i = 1; i < lines.length; i++) {
+    var parts = splitCsvLine(lines[i], d);
+    var o = {};
+    cols.forEach(function (c, k) { o[c] = parts[k] === undefined ? '' : parts[k]; });
+    rows.push(o);
+  }
+  return { columns: cols, rows: rows, json: null };
+}
+
+/* 已知列名 → 规则（CS 选手预设也走这套推断，只是关键词更多） */
+var PRESET_CS = {
+  name: { label: '昵称', rule: 'exact', primary: true },
+  nickname: { label: '昵称', rule: 'exact', primary: true },
+  team: { label: '当前队伍', rule: 'listHit', link: 'teamHistory' },
+  teamHistory: { label: '历史队伍', rule: 'exact', hidden: true },
+  country: { label: '国家/地区', rule: 'group', link: 'region' },
+  nationality: { label: '国家/地区', rule: 'group', link: 'region' },
+  region: { label: '赛区', rule: 'exact', hidden: true },
+  age: { label: '年龄', rule: 'number', tol: 3 },
+  role: { label: '位置', rule: 'exact' },
+  majorWins: { label: 'Major 冠军数', rule: 'number', tol: 1 },
+  majorApps: { label: 'Major 参赛次数', rule: 'number', tol: 1 },
+  status: { label: '状态', rule: 'exact' },
+  tiers: { label: '档位', rule: 'exact', hidden: true }
+};
+
+function inferField(key, samples, preset) {
+  var known = preset === 'cs' ? PRESET_CS[key] : null;
+  var f = { key: key, label: (known && known.label) || key, rule: 'text', tol: null, link: '', primary: false, hidden: false };
+  if (known) {
+    f.label = known.label;
+    f.rule = known.rule;
+    if (known.tol !== undefined) f.tol = known.tol;
+    if (known.link) f.link = known.link;
+    if (known.primary) f.primary = true;
+    if (known.hidden) f.hidden = true;
+  } else {
+    var vals = samples.filter(function (v) { return v !== '' && v !== null && v !== undefined; });
+    if (vals.length && vals.every(looksNumeric)) { f.rule = 'number'; f.tol = 3; }
+    else if (vals.length && vals.some(looksList) && vals.filter(looksList).length > vals.length * 0.5) { f.rule = 'setOverlap'; }
+    else f.rule = 'text';
+  }
+  return f;
+}
+
+function inferFields(columns, rows, preset) {
+  var fields = columns.map(function (c) {
+    var samples = rows.slice(0, 30).map(function (r) { return r[c]; });
+    return inferField(c, samples, preset);
+  });
+  if (!fields.some(function (f) { return f.primary; })) fields[0].primary = true;
+  /* 列名是「国家/地区」这类未知名字时，尝试与常见关联列对齐 */
+  fields.forEach(function (f) {
+    if (f.rule === 'listHit' && !f.link) {
+      var hit = fields.filter(function (x) { return /历史|历任|过往|history/i.test(x.key); })[0];
+      if (hit) f.link = hit.key;
+    }
+    if (f.rule === 'group' && !f.link) {
+      var hit2 = fields.filter(function (x) { return /赛区|地区|大区|region/i.test(x.key); })[0];
+      if (hit2) f.link = hit2.key;
+    }
+  });
+  return fields;
+}
+
+function guessFieldList(columns, rows, preset) {
+  return { fields: inferFields(columns, rows, preset), columns: columns, rows: rows };
+}
+
+function makeDataset(name, columns, rows, preset, groups) {
+  var res = guessFieldList(columns, rows, preset);
+  return {
+    id: 'ds' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name: name || '未命名数据集',
+    note: '',
+    fields: res.fields,
+    rows: rows,
+    groups: groups || {},
+    createdAt: new Date().toISOString().slice(0, 10)
+  };
+}
+
+/* ---------- 示例数据：元素周期表（公开事实，前 36 号元素） ---------- */
+var EXAMPLE_ELEMENT = {
+  name: '示例 · 元素周期表（前 36 号）',
+  columns: ['名称', '符号', '原子序数', '相对原子质量', '类别', '周期', '族', '常温状态'],
+  rows: [
+    ['氢','H',1,1.008,'非金属',1,1,'气体'],
+    ['氦','He',2,4.003,'稀有气体',1,18,'气体'],
+    ['锂','Li',3,6.94,'碱金属',2,1,'固体'],
+    ['铍','Be',4,9.012,'碱土金属',2,2,'固体'],
+    ['硼','B',5,10.81,'半金属',2,13,'固体'],
+    ['碳','C',6,12.011,'非金属',2,14,'固体'],
+    ['氮','N',7,14.007,'非金属',2,15,'气体'],
+    ['氧','O',8,15.999,'非金属',2,16,'气体'],
+    ['氟','F',9,18.998,'卤素',2,17,'气体'],
+    ['氖','Ne',10,20.180,'稀有气体',2,18,'气体'],
+    ['钠','Na',11,22.990,'碱金属',3,1,'固体'],
+    ['镁','Mg',12,24.305,'碱土金属',3,2,'固体'],
+    ['铝','Al',13,26.982,'贫金属',3,13,'固体'],
+    ['硅','Si',14,28.085,'半金属',3,14,'固体'],
+    ['磷','P',15,30.974,'非金属',3,15,'固体'],
+    ['硫','S',16,32.06,'非金属',3,16,'固体'],
+    ['氯','Cl',17,35.45,'卤素',3,17,'气体'],
+    ['氩','Ar',18,39.95,'稀有气体',3,18,'气体'],
+    ['钾','K',19,39.098,'碱金属',4,1,'固体'],
+    ['钙','Ca',20,40.078,'碱土金属',4,2,'固体'],
+    ['钪','Sc',21,44.956,'过渡金属',4,3,'固体'],
+    ['钛','Ti',22,47.867,'过渡金属',4,4,'固体'],
+    ['钒','V',23,50.942,'过渡金属',4,5,'固体'],
+    ['铬','Cr',24,51.996,'过渡金属',4,6,'固体'],
+    ['锰','Mn',25,54.938,'过渡金属',4,7,'固体'],
+    ['铁','Fe',26,55.845,'过渡金属',4,8,'固体'],
+    ['钴','Co',27,58.933,'过渡金属',4,9,'固体'],
+    ['镍','Ni',28,58.693,'过渡金属',4,10,'固体'],
+    ['铜','Cu',29,63.546,'过渡金属',4,11,'固体'],
+    ['锌','Zn',30,65.38,'过渡金属',4,12,'固体'],
+    ['镓','Ga',31,69.723,'贫金属',4,13,'固体'],
+    ['锗','Ge',32,72.630,'半金属',4,14,'固体'],
+    ['砷','As',33,74.922,'半金属',4,15,'固体'],
+    ['硒','Se',34,78.971,'非金属',4,16,'固体'],
+    ['溴','Br',35,79.904,'卤素',4,17,'液体'],
+    ['氪','Kr',36,83.798,'稀有气体',4,18,'气体']
+  ],
+  fields: [
+    { key: '名称', label: '元素名称', rule: 'exact', primary: true },
+    { key: '符号', label: '符号', rule: 'text' },
+    { key: '原子序数', label: '原子序数', rule: 'number', tol: 2 },
+    { key: '相对原子质量', label: '相对原子质量', rule: 'number', tol: 4 },
+    { key: '类别', label: '类别', rule: 'exact' },
+    { key: '周期', label: '周期', rule: 'number', tol: 0 },
+    { key: '族', label: '族', rule: 'number', tol: 0 },
+    { key: '常温状态', label: '常温状态', rule: 'exact' }
+  ],
+  groups: {}
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    RULES: RULES, RULE_BY_KEY: RULE_BY_KEY, buildDataset: buildDataset, relCode: relCode,
+    decodeRel: decodeRel, colorOf: colorOf, dirOf: dirOf, normText: normText, toNum: toNum,
+    toList: toList, filterCandidates: filterCandidates, feedbackAgainst: feedbackAgainst,
+    rankGuesses: rankGuesses, rankAsks: rankAsks, partitionByAsk: partitionByAsk,
+    lockText: lockText, parseAny: parseAny, inferFields: inferFields, makeDataset: makeDataset,
+    guessNorm: guessNorm, recordGuessNorms: recordGuessNorms, matchGuess: matchGuess, matchAsk: matchAsk,
+    EXAMPLE_ELEMENT: EXAMPLE_ELEMENT, ASK_LABELS: ASK_LABELS, looksNumeric: looksNumeric, looksList: looksList
+  };
+}
+/* ================= ENGINE_END ================= */
+</script>
+<script>
+/* ================= UI ================= */
+(function () {
+  var LS_DS = 'guessr_datasets_v1', LS_CUR = 'guessr_current_v1', LS_REC = 'guessr_records_v1',
+      LS_CFG = 'guessr_cfg_v1', LS_SECRET = 'guessr_secret_v1';
+
+  var state = {
+    datasets: [], curId: '', ds: null,
+    records: {}, mode: 'guess', src: 'local', secrets: {},
+    pending: null, limitGuess: 8, limitAsk: 18, undo: [], poolQuery: ''
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function toast(msg, actionLabel, actionFn) {
+    var old = document.querySelector('.toast');
+    if (old) old.remove();
+    var box = document.createElement('div');
+    box.className = 'toast';
+    box.innerHTML = '<span></span>';
+    box.firstChild.textContent = msg;
+    if (actionLabel) {
+      var b = document.createElement('button');
+      b.textContent = actionLabel;
+      b.addEventListener('click', function () { box.remove(); if (actionFn) actionFn(); });
+      box.appendChild(b);
+    }
+    document.body.appendChild(box);
+    setTimeout(function () { if (box.parentNode) box.remove(); }, 6000);
+  }
+  function download(name, text) {
+    var blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a);
+    try { a.click(); } finally { a.remove(); URL.revokeObjectURL(url); }
+  }
+
+  /* ---------- 存档 ---------- */
+  function save() {
+    try {
+      localStorage.setItem(LS_DS, JSON.stringify(state.datasets));
+      localStorage.setItem(LS_CUR, state.curId);
+      localStorage.setItem(LS_REC, JSON.stringify(state.records));
+      localStorage.setItem(LS_SECRET, JSON.stringify(state.secrets));
+      localStorage.setItem(LS_CFG, JSON.stringify({ mode: state.mode, src: state.src }));
+    } catch (e) {}
+  }
+  function load() {
+    try {
+      state.datasets = JSON.parse(localStorage.getItem(LS_DS) || '[]');
+      state.curId = localStorage.getItem(LS_CUR) || '';
+      state.records = JSON.parse(localStorage.getItem(LS_REC) || '{}');
+      state.secrets = JSON.parse(localStorage.getItem(LS_SECRET) || '{}');
+      var c = JSON.parse(localStorage.getItem(LS_CFG) || '{}');
+      if (c.mode) state.mode = c.mode;
+      if (c.src) state.src = c.src;
+    } catch (e) {}
+  }
+  function curRecords() {
+    if (!state.records[state.curId]) state.records[state.curId] = [];
+    return state.records[state.curId];
+  }
+  function pushUndo() {
+    state.undo.push(JSON.stringify({ records: state.records, datasets: state.datasets, curId: state.curId, secrets: state.secrets }));
+    if (state.undo.length > 30) state.undo.shift();
+    $('btn-undo').disabled = false;
+  }
+  function undo() {
+    var s = state.undo.pop();
+    if (!s) { toast('没有可撤销的操作'); return; }
+    try {
+      var d = JSON.parse(s);
+      state.records = d.records; state.datasets = d.datasets; state.curId = d.curId; state.secrets = d.secrets;
+      state.ds = buildDataset(state.datasets.filter(function (x) { return x.id === state.curId; })[0] || { fields: [], rows: [] });
+    } catch (e) { return; }
+    save(); renderAll(); syncControls();
+    $('btn-undo').disabled = state.undo.length === 0;
+    toast('已撤销上一步');
+  }
+
+  function useDataset(id) {
+    state.curId = id || '';
+    var raw = state.datasets.filter(function (d) { return d.id === state.curId; })[0];
+    state.ds = raw ? buildDataset(raw) : null;
+    buildGuessForm();
+    save(); renderAll(); syncControls();
+  }
+
+  /* 按主键在数据里找一行（本地出题时用：输入名字即可带出全部属性） */
+  function findRowByPrimary(value) {
+    if (!state.ds) return -1;
+    var k = normText(value);
+    if (!k) return -1;
+    for (var i = 0; i < state.ds.rows.length; i++) {
+      if (normText(state.ds.rows[i].row[state.ds.primary.key]) === k) return i;
+    }
+    return -1;
+  }
+
+  /* ---------- 动态表单 ---------- */
+  function buildGuessForm() {
+    var box = $('guess-values');
+    box.innerHTML = '';
+    if (!state.ds) return;
+    state.ds.fields.forEach(function (f) {
+      var wrap = document.createElement('div');
+      wrap.innerHTML = '<label class="f">' + esc(f.label) + '</label>';
+      var el;
+      if (f.rule === 'number') { el = document.createElement('input'); el.type = 'number'; }
+      else { el = document.createElement('input'); el.type = 'text'; }
+      el.id = 'gv-' + f.key;
+      el.dataset.key = f.key;
+      if (f.rule === 'setOverlap') el.placeholder = '多个用 / 分隔';
+      wrap.appendChild(el);
+      box.appendChild(wrap);
+    });
+
+    var fb = $('guess-fb');
+    fb.innerHTML = '';
+    state.ds.fields.forEach(function (f) {
+      if (f.key === state.ds.primary.key) return;
+      var wrap = document.createElement('div');
+      wrap.innerHTML = '<label class="f">' + esc(f.label) + '</label>';
+      var cell = document.createElement('div');
+      cell.className = 'fbcell';
+      var cyc = document.createElement('button');
+      cyc.type = 'button'; cyc.className = 'cyc gray'; cyc.dataset.key = f.key; cyc.dataset.color = ''; cyc.textContent = '未设';
+      cell.appendChild(cyc);
+      if (f.rule === 'number') {
+        var d = document.createElement('button');
+        d.type = 'button'; d.className = 'dirbtn'; d.dataset.key = f.key; d.dataset.dir = ''; d.textContent = '—';
+        cell.appendChild(d);
+      }
+      wrap.appendChild(cell);
+      fb.appendChild(wrap);
+    });
+
+    var sel = $('a-field');
+    sel.innerHTML = state.ds.fields.filter(function (f) { return f.key !== state.ds.primary.key; })
+      .map(function (f) { return '<option value="' + esc(f.key) + '">' + esc(f.label) + '</option>'; }).join('');
+
+    $('lbl-primary').textContent = state.ds.primary ? state.ds.primary.label : '名称';
+    $('primary-list').innerHTML = state.ds.rows.map(function (r) {
+      return '<option value="' + esc(r.row[state.ds.primary.key]) + '"></option>';
+    }).join('');
+  }
+
+  function guessRawFromForm() {
+    var raw = {};
+    state.ds.fields.forEach(function (f) {
+      var el = $('gv-' + f.key);
+      raw[f.key] = el ? el.value.trim() : '';
+    });
+    raw[state.ds.primary.key] = $('g-name').value.trim();
+    return raw;
+  }
+  function guessNormsFromForm() {
+    var raw = guessRawFromForm(), n = {};
+    state.ds.fields.forEach(function (f) { n[f.key] = guessNorm(f, raw[f.key]); });
+    return n;
+  }
+  function resetGuessForm() {
+    var box = $('guess-values');
+    box.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+    $('g-name').value = '';
+    var fb = $('guess-fb');
+    fb.querySelectorAll('.cyc').forEach(function (c) { c.dataset.color = ''; c.className = 'cyc gray'; c.textContent = '未设'; });
+    fb.querySelectorAll('.dirbtn').forEach(function (d) { d.dataset.dir = ''; d.className = 'dirbtn'; d.textContent = '—'; });
+    $('fold-values').open = false;
+    $('a-value').value = '';
+    updateFoldPreview();
+  }
+
+  /* ---------- 渲染 ---------- */
+  function syncControls() {
+    $('seg-mode').querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)); });
+    $('seg-src').querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.src === state.src)); });
+    var sel = $('sel-dataset');
+    sel.innerHTML = state.datasets.length
+      ? state.datasets.map(function (d) {
+          return '<option value="' + esc(d.id) + '"' + (d.id === state.curId ? ' selected' : '') + '>' + esc(d.name) + '</option>';
+        }).join('')
+      : '<option value="">（还没有数据集）</option>';
+  }
+
+  function renderProgress() {
+    var recs = curRecords();
+    var g = recs.filter(function (r) { return r.kind !== 'ask'; }).length;
+    var a = recs.filter(function (r) { return r.kind === 'ask'; }).length;
+    var max = state.mode === 'guess' ? state.limitGuess : state.limitAsk;
+    var used = state.mode === 'guess' ? g : a;
+    var meter = '';
+    if (max <= 10) {
+      var pips = '';
+      for (var i = 0; i < max; i++) pips += '<span class="pip' + (i < used ? ' used' : '') + '"></span>';
+      meter = '<span class="pips">' + pips + '</span>';
+    } else {
+      meter = '<span class="bar"><span class="bar-fill" style="width:' + Math.round(used / max * 100) + '%"></span></span>';
+    }
+    var label = state.mode === 'guess'
+      ? '已猜 <b>' + g + '/' + max + '</b>'
+      : '已问 <b>' + a + '/' + max + '</b> · 已猜 <b>' + g + '</b>';
+    if (state.src === 'local' && state.secrets[state.curId] !== undefined) {
+      var won = recs.filter(function (r) { return r.kind === 'guess' && r.win; }).length;
+      label += won ? ' · <span class="chip green">已猜中</span>' : ' · <span class="chip plain">本地出题中</span>';
+    }
+    $('progress').innerHTML = meter + label;
+  }
+
+  function renderRecords() {
+    var recs = curRecords();
+    $('rec-count').textContent = recs.length ? recs.length + ' 条' : '';
+    $('rec-body').innerHTML = recs.length ? recs.map(function (r, i) {
+      if (r.kind === 'ask') {
+        var f = state.ds ? state.ds.fields.filter(function (x) { return x.key === r.field; })[0] : null;
+        return '<tr><td><span class="chip plain">提问</span></td><td>' + esc((f ? f.label : r.field) + ' = ' + r.value) + '</td><td>' +
+          '<span class="chip ' + (r.result === 'yes' ? 'green' : r.result === 'close' ? 'yellow' : 'gray') + '">' + esc(ASK_LABELS[r.result]) + '</span>' +
+          '</td><td><button class="btn ghost danger" data-del="' + i + '">删除</button></td></tr>';
+      }
+      var fbs = state.ds ? state.ds.fields.map(function (f) {
+        var fb = (r.fb || {})[f.key];
+        if (!fb || !fb.color) return '';
+        var dir = f.rule === 'number' && fb.color !== 'green' && fb.dir ? (fb.dir === 'up' ? '↑' : '↓') : '';
+        return '<span class="chip ' + fb.color + '">' + esc(f.label) + COLOR_LABELS[fb.color] + dir + '</span> ';
+      }).join('') : '';
+      var vals = state.ds ? state.ds.fields.filter(function (f) { return !f.hidden; }).map(function (f) {
+        var v = (r.raw || {})[f.key];
+        return v === '' || v === null || v === undefined ? '' : esc(f.label + ' ' + v);
+      }).filter(Boolean).join(' · ') : '';
+      return '<tr><td><span class="chip ' + (r.win ? 'green' : 'gray') + '">猜名</span></td><td><b>' +
+        esc((r.raw || {})[state.ds.primary.key]) + '</b>' + (r.win ? ' <span class="chip green">命中</span>' : '') +
+        '<div class="tiny">' + vals + '</div></td><td>' + (fbs || '<span class="tiny">无反馈</span>') +
+        '</td><td><button class="btn ghost danger" data-del="' + i + '">删除</button></td></tr>';
+    }).join('') : '<tr><td colspan="4"><div class="empty">还没有线索。</div></td></tr>';
+  }
+
+  function analyze() {
+    if (!state.ds || !state.ds.rows.length) return { kept: [], dropped: [] };
+    return filterCandidates(state.ds, curRecords());
+  }
+
+  function renderAdvice() {
+    var box = $('advice');
+    if (!state.ds || !state.ds.rows.length) {
+      box.innerHTML = '<div class="empty">还没有数据集。去「数据集」页导入，或载入示例数据。</div>';
+      return;
+    }
+    var res = analyze(), set = res.kept;
+    if (!set.length) {
+      box.innerHTML = '<div class="errbox">没有候选符合线索 —— 可能某条反馈录错了。<br>' + esc((res.dropped[0] || {}).why || '') + '</div>';
+      return;
+    }
+    if (set.length === 1) {
+      box.innerHTML = '<div class="okbox">只剩一个可能：<b>' + esc(state.ds.rows[set[0]].row[state.ds.primary.key]) + '</b></div>';
+      return;
+    }
+    var html = '';
+    if (state.mode === 'guess' || set.length <= 20) {
+      var ranked = rankGuesses(state.ds, set).slice(0, 5);
+      html += '<h3 style="margin-bottom:8px">最该猜谁</h3>' + ranked.map(function (r, i) {
+        var row = state.ds.rows[r.idx].row;
+        var sub = state.ds.fields.filter(function (f) { return !f.hidden && f.key !== state.ds.primary.key; })
+          .slice(0, 3).map(function (f) { return row[f.key]; }).filter(Boolean).join(' · ');
+        return '<div class="advice"><span class="who">' + (i + 1) + '. ' + esc(row[state.ds.primary.key]) + '</span>' +
+          '<span class="tiny">' + esc(sub) + '</span>' +
+          '<span class="num">期望剩余 ' + r.expected.toFixed(2) + ' · 最坏 ' + r.worst + '</span>' +
+          '<button class="btn sm" data-fill="' + esc(row[state.ds.primary.key]) + '">填入</button></div>';
+      }).join('');
+    }
+    if (state.mode === 'ask') {
+      var asks = rankAsks(state.ds, set).slice(0, 5);
+      html += '<h3 style="margin:12px 0 8px">最该问什么</h3>' + (asks.length ? asks.map(function (a, i) {
+        var frag = [];
+        if (a.counts.yes) frag.push('是 ' + a.counts.yes);
+        if (a.counts.close) frag.push('也不是 ' + a.counts.close);
+        if (a.counts.no) frag.push('不是 ' + a.counts.no);
+        return '<div class="advice"><span class="who">' + (i + 1) + '. 你的' + esc(a.field.label) + '是 ' + esc(a.value) + ' 吗？</span>' +
+          '<span class="num">期望剩余 ' + a.expected.toFixed(2) + ' · ' + esc(frag.join(' / ')) + '</span>' +
+          '<button class="btn sm" data-fillask="' + esc(a.field.key) + '|' + esc(a.value) + '">填入</button></div>';
+      }).join('') : '<div class="empty">候选太少或属性不够，直接猜更快。</div>');
+    }
+    box.innerHTML = html;
+  }
+
+  function renderLocks() {
+    if (!state.ds) { $('locks').innerHTML = ''; return; }
+    var recs = curRecords();
+    var html = state.ds.fields.filter(function (f) { return !f.hidden; }).map(function (f) {
+      var L = lockText(f, recs);
+      var cls = L.text === '未约束' ? 'gray' : 'plain';
+      return '<div class="lockline"><b>' + esc(f.label) + '</b><span class="chip ' + cls + '">' + esc(L.text) + '</span>' +
+        (L.hits.length ? '<span class="tiny">' + esc(L.hits[L.hits.length - 1]) + '</span>' : '') + '</div>';
+    }).join('');
+    var free = state.ds.fields.filter(function (f) { return !f.hidden && lockText(f, recs).text === '未约束'; });
+    if (recs.length && free.length) {
+      html += '<div class="warnbox" style="margin-top:8px">还没线索的属性：' + esc(free.map(function (f) { return f.label; }).join('、')) + '</div>';
+    }
+    $('locks').innerHTML = html;
+  }
+
+  function renderCandidates() {
+    if (!state.ds || !state.ds.rows.length) { $('cand-count').textContent = ''; $('cands').innerHTML = ''; return; }
+    var res = analyze();
+    $('cand-count').textContent = res.kept.length + ' / ' + state.ds.rows.length + ' 个候选';
+    if (!res.kept.length) { $('cands').innerHTML = '<div class="errbox">0 个候选符合。</div>'; return; }
+    var cols = state.ds.fields.filter(function (f) { return !f.hidden; });
+    var shown = res.kept.slice(0, 200);
+    $('cands').innerHTML = '<div class="scroll"><table class="wide"><thead><tr><th>#</th>' +
+      cols.map(function (f) { return '<th>' + esc(f.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      shown.map(function (i) {
+        var row = state.ds.rows[i].row;
+        return '<tr><td class="tiny">' + (i + 1) + '</td>' + cols.map(function (f) {
+          return '<td>' + esc(Array.isArray(row[f.key]) ? row[f.key].join(' / ') : (row[f.key] === undefined ? '' : row[f.key])) + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>' +
+      (res.kept.length > shown.length ? '<div class="tiny" style="margin-top:6px">还有 ' + (res.kept.length - shown.length) + ' 个未显示。</div>' : '');
+  }
+
+  function updateFoldPreview() {
+    if (!state.ds) return;
+    var bits = state.ds.fields.map(function (f) {
+      var el = $('gv-' + f.key);
+      var v = el ? el.value : '';
+      return v === '' ? '' : f.label + ' ' + v;
+    }).filter(Boolean);
+    $('fold-preview').textContent = '　' + (bits.length ? bits.join(' · ') : '（未填）');
+  }
+
+  function renderModeUI() {
+    var local = state.src === 'local';
+    $('fb-wrap').style.display = local ? 'none' : '';
+    $('fb-label').textContent = '反馈（点格子循环切换：绿 → 黄 → 灰；数值列右侧切 ↑ / ↓）';
+    $('src-hint').textContent = local
+      ? '页面自己藏了一个目标，反馈自动给 —— 自己一个人就能玩'
+      : '你在别处玩，把每格反馈手工点出来录进去';
+    $('ask-hint').innerHTML = local
+      ? '本地出题：填好属性与值，页面会自动回答（是 / 是也不是 / 不是）。'
+      : '外部裁判：填好属性与值，再选对方给的回答。';
+    $('a-result').closest('div').style.display = local ? 'none' : '';
+    $('h-guess').textContent = state.mode === 'guess' ? '猜一个目标' : '猜一个目标（提问模式下也可以猜）';
+  }
+
+  function renderAll() {
+    if (state.ds && state.ds.fields.length && !$('guess-values').children.length) buildGuessForm();
+    syncControls(); renderProgress(); renderRecords(); renderAdvice(); renderLocks();
+    renderCandidates(); renderDatasetTable(); renderFieldEditor(); renderModeUI();
+  }
+
+  /* ---------- 本地出题 ---------- */
+  function ensureSecret(reset) {
+    if (!state.ds || !state.ds.rows.length) return;
+    if (reset || state.secrets[state.curId] === undefined || state.secrets[state.curId] >= state.ds.rows.length) {
+      state.secrets[state.curId] = Math.floor(Math.random() * state.ds.rows.length);
+      save();
+    }
+  }
+  function secretRowName() {
+    var i = state.secrets[state.curId];
+    return state.ds && i !== undefined ? state.ds.rows[i].row[state.ds.primary.key] : '';
+  }
+
+  function submitGuess() {
+    if (!state.ds || !state.ds.primary) { toast('先选一个数据集'); return; }
+    var name = $('g-name').value.trim();
+    if (!name) { toast('先填名称'); $('g-name').focus(); return; }
+    var raw = guessRawFromForm(), norms = guessNormsFromForm();
+    if (state.src === 'local') {
+      /* 本地出题：直接按名字在数据里取那一行，属性不用手填 */
+      var hit = findRowByPrimary(name);
+      if (hit < 0) { toast('「' + name + '」不在这个数据集里，本地出题只能猜数据里的目标'); return; }
+      raw = Object.assign({}, state.ds.rows[hit].row);
+      norms = state.ds.rows[hit].n;
+    }
+    var fb = {};
+    if (state.src === 'local') {
+      ensureSecret(false);
+      fb = feedbackAgainst(state.ds, norms, state.secrets[state.curId]);
+    } else {
+      var any = false;
+      state.ds.fields.forEach(function (f) {
+        var el = $('guess-fb').querySelector('.cyc[data-key="' + f.key + '"]');
+        var d = $('guess-fb').querySelector('.dirbtn[data-key="' + f.key + '"]');
+        var color = el ? (el.dataset.color || '') : '';
+        if (color) any = true;
+        fb[f.key] = { color: color, dir: d ? (d.dataset.dir || '') : '' };
+      });
+      if (!any) { toast('一格反馈都没设，先点几个颜色'); return; }
+    }
+    var win = false;
+    if (state.src === 'local') {
+      win = norms[state.ds.primary.key] === state.ds.rows[state.secrets[state.curId]].n[state.ds.primary.key];
+    }
+    pushUndo();
+    curRecords().push({ kind: 'guess', raw: raw, guessNorm: norms, fb: fb, win: win });
+    resetGuessForm();
+    save(); renderAll();
+    if (state.src === 'local' && win) toast('猜中了：' + name + '！', '新一局', function () { newGame(); });
+    else if (state.src === 'local') toast('已记录（目标不是这个）');
+  }
+
+  function submitAsk() {
+    if (!state.ds || !state.ds.primary) { toast('先选一个数据集'); return; }
+    var field = $('a-field').value;
+    var value = $('a-value').value.trim();
+    if (!value) { toast('先填要问的值'); $('a-value').focus(); return; }
+    var f = state.ds.fields.filter(function (x) { return x.key === field; })[0];
+    if (!f) { toast('先选一个属性'); return; }
+    var result = $('a-result').value;
+    if (state.src === 'local') {
+      ensureSecret(false);
+      var code = relCode(f, guessNorm(f, value), state.ds.rows[state.secrets[state.curId]].n, state.ds.ctx);
+      result = !code ? 'no' : (colorOf(code) === 'green' ? 'yes' : (colorOf(code) === 'yellow' ? 'close' : 'no'));
+      toast('回答：' + ASK_LABELS[result]);
+    }
+    pushUndo();
+    curRecords().push({ kind: 'ask', field: field, value: value, result: result });
+    $('a-value').value = '';
+    save(); renderAll();
+    $('a-value').focus();
+  }
+
+  function newGame() {
+    if (!state.ds) { toast('先选一个数据集'); return; }
+    pushUndo();
+    state.records[state.curId] = [];
+    state.secrets[state.curId] = Math.floor(Math.random() * state.ds.rows.length);
+    resetGuessForm();
+    save(); renderAll();
+    toast(state.src === 'local' ? '新一局：已经藏好新目标了' : '已清空本局线索', '撤销', undo);
+  }
+
+  /* ---------- 数据集页 ---------- */
+  function renderDatasetTable() {
+    $('ds-meta').textContent = state.datasets.length ? state.datasets.length + ' 个数据集' : '';
+    $('ds-body').innerHTML = state.datasets.length ? state.datasets.map(function (d, i) {
+      var cur = d.id === state.curId;
+      return '<tr><td><b>' + esc(d.name) + '</b>' + (cur ? ' <span class="chip green">当前</span>' : '') + '</td>' +
+        '<td>' + (d.rows || []).length + '</td><td>' + (d.fields || []).length + '</td><td class="tiny">' + esc(d.createdAt || '') + '</td>' +
+        '<td style="white-space:nowrap">' +
+        (cur ? '' : '<button class="btn ghost" data-used="' + i + '">切换</button>') +
+        '<button class="btn ghost" data-exp="' + i + '">导出</button>' +
+        '<button class="btn ghost danger" data-delds="' + i + '">删</button></td></tr>';
+    }).join('') : '<tr><td colspan="5"><div class="empty">还没有数据集，用上面的导入或示例数据。</div></td></tr>';
+  }
+
+  function fieldRowHtml(f, idx, samples) {
+    var ruleOpts = RULES.map(function (r) {
+      return '<option value="' + r.key + '"' + (f.rule === r.key ? ' selected' : '') + '>' + r.label + '</option>';
+    }).join('');
+    var needTol = f.rule === 'number' || f.rule === 'setOverlap';
+    var needLink = f.rule === 'group' || f.rule === 'listHit';
+    return '<tr class="fieldrow">' +
+      '<td class="tiny">' + esc(f.key) + '</td>' +
+      '<td><input type="text" data-fi="' + idx + '" data-k="label" value="' + esc(f.label) + '" /></td>' +
+      '<td><select data-fi="' + idx + '" data-k="rule">' + ruleOpts + '</select></td>' +
+      '<td>' + (needTol ? '<input type="number" style="width:72px" data-fi="' + idx + '" data-k="tol" value="' + (f.tol === null || f.tol === undefined ? 0 : f.tol) + '" />' : '<span class="tiny">—</span>') + '</td>' +
+      '<td>' + (needLink ? '<input type="text" style="width:110px" data-fi="' + idx + '" data-k="link" value="' + esc(f.link || '') + '" placeholder="列名/分组名" />' : '<span class="tiny">—</span>') + '</td>' +
+      '<td><input type="radio" name="primary-' + (state.editingPreview ? 'p' : 'c') + '" data-fi="' + idx + '" data-k="primary" ' + (f.primary ? 'checked' : '') + ' /></td>' +
+      '<td><input type="checkbox" data-fi="' + idx + '" data-k="hidden" ' + (f.hidden ? 'checked' : '') + ' /></td>' +
+      '<td class="tiny">' + esc(samples) + '</td></tr>';
+  }
+
+  function samplesFor(key) {
+    if (!state.ds) return '';
+    return state.ds.rows.slice(0, 3).map(function (r) {
+      var v = r.row[key];
+      return Array.isArray(v) ? v.join('/') : v;
+    }).filter(function (v) { return v !== undefined && v !== ''; }).join(' | ');
+  }
+
+  function renderFieldEditor() {
+    if (!state.ds) { $('field-body2').innerHTML = ''; return; }
+    $('field-body2').innerHTML = state.ds.fields.map(function (f, i) { return fieldRowHtml(f, i, samplesFor(f.key)); }).join('');
+  }
+
+  function renderPreview() {
+    var p = state.pending;
+    if (!p) { $('preview-card').style.display = 'none'; return; }
+    $('preview-card').style.display = '';
+    state.editingPreview = true;
+    $('preview-meta').textContent = p.rows.length + ' 行 · ' + p.fields.length + ' 列';
+    $('field-body').innerHTML = p.fields.map(function (f, i) {
+      var s = p.rows.slice(0, 3).map(function (r) { return r[f.key]; }).filter(Boolean).join(' | ');
+      return fieldRowHtml(f, i, s);
+    }).join('');
+    if ($('imp-name').value.trim() && !p.nameEdited) p.name = $('imp-name').value.trim();
+  }
+
+  /* ---------- 事件 ---------- */
+  document.querySelectorAll('nav.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('nav.tabs button').forEach(function (x) { x.setAttribute('aria-selected', 'false'); });
+      b.setAttribute('aria-selected', 'true');
+      document.querySelectorAll('section.tab').forEach(function (s) { s.classList.remove('on'); });
+      $('tab-' + b.dataset.tab).classList.add('on');
+    });
+  });
+
+  $('seg-mode').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-mode]');
+    if (!b) return;
+    state.mode = b.dataset.mode; save(); renderAll();
+  });
+  $('seg-src').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-src]');
+    if (!b) return;
+    state.src = b.dataset.src;
+    if (state.src === 'local') ensureSecret(true);
+    save(); renderAll();
+  });
+  $('sel-dataset').addEventListener('change', function () { useDataset(this.value); });
+  $('btn-newgame').addEventListener('click', newGame);
+  $('btn-undo').addEventListener('click', undo);
+  $('btn-guess').addEventListener('click', submitGuess);
+  $('btn-ask').addEventListener('click', submitAsk);
+  $('g-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitGuess(); } });
+  /* 输入的名字若命中数据里的某一行，自动带出该行属性（省得手填） */
+  $('g-name').addEventListener('input', function () {
+    if (!state.ds || !state.ds.primary) return;
+    var hit = findRowByPrimary(this.value);
+    if (hit < 0) { updateFoldPreview(); return; }
+    var row = state.ds.rows[hit].row;
+    state.ds.fields.forEach(function (f) {
+      var el = $('gv-' + f.key);
+      if (!el) return;
+      var v = row[f.key];
+      el.value = Array.isArray(v) ? v.join(' / ') : (v === undefined || v === null ? '' : v);
+    });
+    updateFoldPreview();
+  });
+  $('a-value').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitAsk(); } });
+  $('btn-clear-rec').addEventListener('click', function () {
+    if (!curRecords().length) { toast('本局还没有线索'); return; }
+    pushUndo(); state.records[state.curId] = []; save(); renderAll(); toast('已清空本局线索', '撤销', undo);
+  });
+  $('rec-body').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-del]');
+    if (!b) return;
+    pushUndo(); curRecords().splice(Number(b.dataset.del), 1); save(); renderAll(); toast('已删除', '撤销', undo);
+  });
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && String(e.key).toLowerCase() === 'z' && !/INPUT|TEXTAREA|SELECT/.test(tag)) {
+      e.preventDefault(); undo();
+    }
+  });
+
+  $('guess-fb').addEventListener('click', function (e) {
+    var cyc = e.target.closest('.cyc');
+    if (cyc) {
+      var order = ['', 'green', 'yellow', 'gray'];
+      var next = order[(order.indexOf(cyc.dataset.color || '') + 1) % order.length];
+      cyc.dataset.color = next;
+      cyc.className = 'cyc ' + (next || 'gray');
+      cyc.textContent = next ? COLOR_LABELS[next] : '未设';
+      return;
+    }
+    var d = e.target.closest('.dirbtn');
+    if (d) {
+      var o = ['', 'up', 'down'];
+      var n = o[(o.indexOf(d.dataset.dir || '') + 1) % o.length];
+      d.dataset.dir = n;
+      d.className = 'dirbtn' + (n ? ' on' : '');
+      d.textContent = n === 'up' ? '↑' : n === 'down' ? '↓' : '—';
+    }
+  });
+  $('guess-values').addEventListener('input', updateFoldPreview);
+
+  document.addEventListener('click', function (e) {
+    var g = e.target.closest('button[data-fill]');
+    if (g) { $('g-name').value = g.dataset.fill; $('g-name').focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    var a = e.target.closest('button[data-fillask]');
+    if (a) {
+      var parts = a.dataset.fillask.split('|');
+      $('a-field').value = parts[0];
+      $('a-value').value = parts.slice(1).join('|');
+      return;
+    }
+    var du = e.target.closest('button[data-used]');
+    if (du) { useDataset(state.datasets[Number(du.dataset.used)].id); return; }
+    var ex = e.target.closest('button[data-exp]');
+    if (ex) {
+      var d = state.datasets[Number(ex.dataset.exp)];
+      download((d.name || 'dataset') + '.guessr.json', JSON.stringify({ type: 'guessr-dataset', dataset: d }, null, 1));
+      return;
+    }
+    var dd = e.target.closest('button[data-delds]');
+    if (dd) {
+      var idx = Number(dd.dataset.delds);
+      pushUndo();
+      var removed = state.datasets.splice(idx, 1)[0];
+      if (removed.id === state.curId) useDataset(state.datasets.length ? state.datasets[0].id : '');
+      else { save(); renderAll(); }
+      toast('已删除数据集「' + removed.name + '」', '撤销', undo);
+    }
+  });
+
+  /* 字段编辑器：两处共用一套事件 */
+  ['field-body', 'field-body2'].forEach(function (tb) {
+    $(tb).addEventListener('input', onFieldEdit);
+    $(tb).addEventListener('change', onFieldEdit);
+  });
+  function onFieldEdit(e) {
+    var el = e.target;
+    if (!el.dataset || el.dataset.fi === undefined) return;
+    var isPreview = el.closest('tbody').id === 'field-body';
+    var list = isPreview ? state.pending.fields : state.ds.fields;
+    var f = list[Number(el.dataset.fi)];
+    if (!f) return;
+    var k = el.dataset.k;
+    if (k === 'primary') {
+      list.forEach(function (x, i) { x.primary = (i === Number(el.dataset.fi)); });
+    } else if (k === 'hidden') {
+      f.hidden = el.checked;
+    } else if (k === 'tol') {
+      f.tol = el.value === '' ? 0 : Number(el.value);
+    } else {
+      f[k] = el.value;
+    }
+    if (isPreview) {
+      state.pending.fields = list;
+      if (k === 'rule' || k === 'primary') renderPreview();
+    } else {
+      var raw = state.datasets.filter(function (d) { return d.id === state.curId; })[0];
+      if (raw) {
+        raw.fields = state.ds.fields;
+        if (k === 'rule' || k === 'primary' || k === 'label' || k === 'hidden') {
+          state.ds = buildDataset(raw);
+          buildGuessForm();
+        }
+      }
+      save();
+      if (k === 'rule' || k === 'primary' || k === 'label' || k === 'hidden') renderAll();
+    }
+  }
+
+  $('groups-json').addEventListener('change', function () {
+    try {
+      var v = this.value.trim();
+      var parsed = v ? JSON.parse(v) : {};
+      if (state.pending) { state.pending.groups = parsed.groups || {}; }
+      var raw = state.datasets.filter(function (d) { return d.id === state.curId; })[0];
+      if (raw && !state.pending) { raw.groups = parsed.groups || {}; state.ds = buildDataset(raw); }
+      toast('分组映射已应用');
+      save(); renderAll();
+    } catch (err) { toast('那段 JSON 解析不了：' + err.message); }
+  });
+
+  /* ---------- 导入 ---------- */
+  function doParse() {
+    var text = $('imp-text').value;
+    var preset = $('imp-preset').value;
+    var r = parseAny(text);
+    if (r.error) { $('imp-hint').innerHTML = '<span style="color:#A32D2D">' + esc(r.error) + '</span>'; return; }
+    if (r.json) { loadDatasetObject(r.json, true); return; }
+    var name = $('imp-name').value.trim() || '我的数据集';
+    state.pending = makeDataset(name, r.columns, r.rows, preset || '', {});
+    /* 示例数据自带字段定义，优先用它（比自动推断更贴合） */
+    if (state.exampleFields) { state.pending.fields = state.exampleFields.slice(); state.exampleFields = null; }
+    state.editingPreview = true;
+    renderPreview();
+    $('imp-hint').innerHTML = '解析成功：<b>' + r.rows.length + '</b> 行、<b>' + r.columns.length + '</b> 列。下面确认字段规则后保存。';
+  }
+
+  function loadDatasetObject(obj, fromText) {
+    var ds = obj.dataset || obj;
+    if (!ds || !Array.isArray(ds.rows) || !ds.rows.length) { $('imp-hint').innerHTML = '<span style="color:#A32D2D">这个 JSON 里没有数据集</span>'; return; }
+    pushUndo();
+    ds.id = 'ds' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    ds.createdAt = new Date().toISOString().slice(0, 10);
+    state.datasets.push(ds);
+    useDataset(ds.id);
+    toast('已导入数据集「' + ds.name + '」（' + ds.rows.length + ' 行）', '撤销', undo);
+  }
+
+  $('btn-parse').addEventListener('click', doParse);
+  $('btn-example').addEventListener('click', function () {
+    var ex = EXAMPLE_ELEMENT;
+    $('imp-name').value = ex.name;
+    $('imp-text').value = [ex.columns.join('\t')].concat(ex.rows.map(function (r) { return r.join('\t'); })).join('\n');
+    $('imp-preset').value = '';
+    state.exampleFields = ex.fields;
+    toast('示例数据已填入，点「解析并预览」试试');
+  });
+  $('btn-save-ds').addEventListener('click', function () {
+    var p = state.pending;
+    if (!p) return;
+    pushUndo();
+    var name = $('imp-name').value.trim();
+    if (name) p.name = name;
+    p.id = 'ds' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    p.createdAt = new Date().toISOString().slice(0, 10);
+    p.fields = p.fields;
+    state.datasets.push(p);
+    state.pending = null;
+    renderPreview();
+    useDataset(p.id);
+    toast('已保存数据集「' + p.name + '」', '撤销', undo);
+  });
+  $('btn-cancel-preview').addEventListener('click', function () {
+    state.pending = null; renderPreview(); $('imp-hint').textContent = '';
+  });
+  $('btn-add-field').addEventListener('click', function () {
+    if (!state.ds) { toast('先选一个数据集'); return; }
+    var key = prompt('新字段的列名（数据行里对应的键）：');
+    if (!key) return;
+    var raw = state.datasets.filter(function (d) { return d.id === state.curId; })[0];
+    raw.fields = raw.fields.concat([{ key: key, label: key, rule: 'text', tol: null, link: '', primary: false, hidden: false }]);
+    pushUndo();
+    state.ds = buildDataset(raw);
+    buildGuessForm(); save(); renderAll();
+  });
+  $('btn-export-ds').addEventListener('click', function () {
+    if (!state.ds) { toast('先选一个数据集'); return; }
+    var raw = state.datasets.filter(function (d) { return d.id === state.curId; })[0];
+    download((raw.name || 'dataset') + '.guessr.json', JSON.stringify({ type: 'guessr-dataset', dataset: raw }, null, 1));
+  });
+  $('btn-export-rec').addEventListener('click', function () {
+    if (!state.ds) { toast('先选一个数据集'); return; }
+    download('save-' + (state.ds.name || 'game') + '.json', JSON.stringify({
+      type: 'guessr-save', datasetId: state.curId, mode: state.mode, src: state.src,
+      records: curRecords(), secret: state.secrets[state.curId]
+    }, null, 1));
+  });
+  $('btn-import-file').addEventListener('click', function () {
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json,.csv,.tsv,.txt';
+    inp.addEventListener('change', function () {
+      var file = inp.files && inp.files[0];
+      if (!file) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        var text = String(fr.result);
+        var r = parseAny(text);
+        if (r.error) { toast('读不了这个文件：' + r.error); return; }
+        if (r.json) {
+          if (r.json.type === 'guessr-save' && Array.isArray(r.json.records)) {
+            pushUndo();
+            if (r.json.datasetId) { state.records[r.json.datasetId] = r.json.records; }
+            else state.records[state.curId] = r.json.records;
+            if (typeof r.json.secret === 'number') state.secrets[r.json.datasetId || state.curId] = r.json.secret;
+            save(); renderAll(); toast('已导入对局存档');
+            return;
+          }
+          loadDatasetObject(r.json);
+          return;
+        }
+        $('imp-text').value = text;
+        $('imp-name').value = file.name.replace(/\.[^.]+$/, '');
+        toast('文件已填入导入框，点「解析并预览」');
+      };
+      fr.readAsText(file);
+    });
+    inp.click();
+  });
+
+  /* 拖拽导入 */
+  var drop = $('drop');
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('on'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('on'); });
+  });
+  drop.addEventListener('drop', function (e) {
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      $('imp-text').value = String(fr.result);
+      $('imp-name').value = f.name.replace(/\.[^.]+$/, '');
+      toast('文件已读入，点「解析并预览」');
+    };
+    fr.readAsText(f);
+  });
+
+  /* ---------- 启动 ---------- */
+  load();
+  syncControls();
+  if (state.datasets.length) useDataset(state.curId || state.datasets[0].id);
+  else renderAll();
+  if (state.src === 'local') ensureSecret(false);
+  renderPreview();
+  if (!state.datasets.length) toast('还没有数据集：去「数据集」页导入，或点「载入示例数据」');
+})();
+</script>
+</body>
+</html>
